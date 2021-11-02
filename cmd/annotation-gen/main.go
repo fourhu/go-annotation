@@ -17,7 +17,7 @@ func main() {
 
 	// Override defaults.
 	genericArgs.AddFlags(pflag.CommandLine)
-	genericArgs.InputDirs = []string{"github.com/u2takey/go-annotation/examples"}
+	genericArgs.InputDirs = []string{"github.com/fourhu/go-annotation/examples"}
 	customArgs.AddFlags(pflag.CommandLine)
 
 	_ = flag.Set("logtostderr", "true")
