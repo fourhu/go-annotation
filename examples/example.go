@@ -2,9 +2,9 @@ package examples
 
 import (
 	"context"
+	"github.com/fourhu/go-annotation/pkg/plugin"
 	"github.com/mj37yhyy/gowb/pkg/model"
 	"github.com/mj37yhyy/gowb/pkg/web"
-	"github.com/u2takey/go-annotation/pkg/plugin"
 	"net/http"
 )
 
@@ -59,8 +59,13 @@ func NewComponentD() (*ComponentD, error) {
 	return &ComponentD{IntValue: 2}, nil
 }
 
-// Annotation@Service
 // Annotation@Component
+type ApplicationHandlerService struct {
+	Order              []string
+	ApplicationHandler *ApplicationHandler `autowired:"true"`
+}
+
+// Annotation@Service
 type ApplicationHandler struct {
 }
 

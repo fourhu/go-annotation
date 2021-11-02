@@ -3,14 +3,14 @@ package pkg
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/u2takey/go-annotation/pkg/middleware"
+	"github.com/fourhu/go-annotation/pkg/middleware"
 	"io"
 	"path"
 	"path/filepath"
 	"reflect"
 	"strings"
 
-	"github.com/u2takey/go-annotation/pkg/plugin"
+	"github.com/fourhu/go-annotation/pkg/plugin"
 	"k8s.io/gengo/args"
 	"k8s.io/gengo/examples/set-gen/sets"
 	"k8s.io/gengo/generator"
@@ -18,9 +18,9 @@ import (
 	"k8s.io/gengo/types"
 	"k8s.io/klog/v2"
 
-	annoArgs "github.com/u2takey/go-annotation/cmd/annotation-gen/args"
-	"github.com/u2takey/go-annotation/pkg/lib"
-	_ "github.com/u2takey/go-annotation/pkg/plugin"
+	annoArgs "github.com/fourhu/go-annotation/cmd/annotation-gen/args"
+	"github.com/fourhu/go-annotation/pkg/lib"
+	_ "github.com/fourhu/go-annotation/pkg/plugin"
 )
 
 // prefix$Enable=true
@@ -181,11 +181,11 @@ func NewGenAnnotation(sanitizedName, annotationPrefix string, pkg *types.Package
 		annotationPrefix: annotationPrefix,
 		imports:          generator.NewImportTracker(),
 		importsCache: []string{
-			"github.com/u2takey/go-annotation/pkg/lib",
+			"github.com/fourhu/go-annotation/pkg/lib",
 			"k8s.io/klog",
 			"github.com/mj37yhyy/gowb/pkg/web",
 			"github.com/mj37yhyy/gowb/pkg/model",
-			"github.com/u2takey/go-annotation/pkg/middleware",
+			"github.com/fourhu/go-annotation/pkg/middleware",
 		},
 	}
 }
@@ -334,8 +334,11 @@ func (g *genAnnotation) GenerateType(c *generator.Context, t *types.Type, w io.W
 			"ServiceMethodMap":     serviceMethodMap,
 		}
 		klog.V(3).Infoln("annotation m", m)
-		// render registerTemplate
-		sw.Do(registerTemplate, m)
+
+		if anno.rawTypeName != "Service" {
+			// render registerTemplate
+			sw.Do(registerTemplate, m)
+		}
 
 		if compile, ok := annotationPlugin.(lib.CompileAnnotation); ok {
 			// render plugin template

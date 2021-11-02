@@ -6,8 +6,8 @@ import (
 	"github.com/spf13/pflag"
 	"k8s.io/klog/v2"
 
-	"github.com/u2takey/go-annotation/cmd/annotation-gen/args"
-	"github.com/u2takey/go-annotation/pkg"
+	"github.com/fourhu/go-annotation/cmd/annotation-gen/args"
+	"github.com/fourhu/go-annotation/pkg"
 )
 
 func main() {

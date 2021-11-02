@@ -3,7 +3,7 @@ package plugin
 // example plugin - plugin-description
 
 import (
-	"github.com/u2takey/go-annotation/pkg/lib"
+	"github.com/fourhu/go-annotation/pkg/lib"
 )
 
 func init() {
