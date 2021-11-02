@@ -1,6 +1,6 @@
 package plugin
 
-import "github.com/u2takey/go-annotation/pkg/lib"
+import "github.com/fourhu/go-annotation/pkg/lib"
 
 func init() {
 	lib.RegisterPlugin(new(Component))

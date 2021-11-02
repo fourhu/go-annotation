@@ -13,7 +13,6 @@ type AnnotationArgs struct {
 	AnnotationPrefix string
 }
 
-
 // NewDefaults returns default arguments for the generator.
 func NewDefaults() (*args.GeneratorArgs, *AnnotationArgs) {
 	genericArgs := args.Default().WithoutDefaultFlagParsing()

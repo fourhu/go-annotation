@@ -56,7 +56,7 @@ func StrInSlice(str string, args []string) bool {
 	return false
 }
 
-func After(c context.Context, order []string, args ...interface{}){
+func After(c context.Context, order []string, args ...interface{}) {
 	callMap := make(map[string]CallList, 10)
 	CallListMap.Range(func(key, value interface{}) bool {
 		name := key.(string)
@@ -75,5 +75,3 @@ func After(c context.Context, order []string, args ...interface{}){
 		}
 	}
 }
-
-

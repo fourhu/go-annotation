@@ -3,8 +3,8 @@ package examples
 import (
 	"testing"
 
-	"github.com/u2takey/go-annotation/pkg/lib"
-	"github.com/u2takey/go-annotation/pkg/plugin"
+	"github.com/fourhu/go-annotation/pkg/lib"
+	"github.com/fourhu/go-annotation/pkg/plugin"
 )
 
 func TestAnnotationDescription(t *testing.T) {
