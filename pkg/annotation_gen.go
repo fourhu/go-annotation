@@ -3,7 +3,9 @@ package pkg
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/u2takey/go-annotation/pkg/middleware"
 	"io"
+	"path"
 	"path/filepath"
 	"reflect"
 	"strings"
@@ -166,6 +168,7 @@ type genAnnotation struct {
 	annotationPrefix string
 	pkg              *types.Package
 	imports          namer.ImportTracker
+	importsCache     []string
 }
 
 func NewGenAnnotation(sanitizedName, annotationPrefix string, pkg *types.Package) generator.Generator {
@@ -177,6 +180,13 @@ func NewGenAnnotation(sanitizedName, annotationPrefix string, pkg *types.Package
 		targetPackage:    pkg.Path,
 		annotationPrefix: annotationPrefix,
 		imports:          generator.NewImportTracker(),
+		importsCache: []string{
+			"github.com/u2takey/go-annotation/pkg/lib",
+			"k8s.io/klog",
+			"github.com/mj37yhyy/gowb/pkg/web",
+			"github.com/mj37yhyy/gowb/pkg/model",
+			"github.com/u2takey/go-annotation/pkg/middleware",
+		},
 	}
 }
 
@@ -196,8 +206,7 @@ func (g *genAnnotation) Filter(c *generator.Context, t *types.Type) bool {
 //
 func (g *genAnnotation) Imports(c *generator.Context) (imports []string) {
 	imports = append(imports, g.imports.ImportLines()...)
-	imports = append(imports, "github.com/u2takey/go-annotation/pkg/lib")
-	imports = append(imports, "k8s.io/klog")
+	imports = append(imports, g.importsCache...)
 	return
 }
 
@@ -216,6 +225,10 @@ func findAnnotationType(c *generator.Context, name string) *types.Type {
 		}
 	}
 	return nil
+}
+
+func (g *genAnnotation) getOriginServiceName(t *types.Type) string {
+	return t.Name.Name
 }
 
 func (g *genAnnotation) getNewFunction(c *generator.Context, t *types.Type) string {
@@ -255,14 +268,28 @@ func (g *genAnnotation) getNewFunction(c *generator.Context, t *types.Type) stri
 	return fmt.Sprintf(`func () (interface{}, error) { return new(%s), nil}`, g.Namers(c)["raw"].Name(t))
 }
 
+func (g *genAnnotation) trimImport(name string) string {
+	for _, imt := range g.importsCache {
+		if strings.HasPrefix(name, imt) {
+			i := path.Base(strings.ReplaceAll(imt, fmt.Sprintf(".%s", name), ""))
+			if i != "" {
+				return fmt.Sprintf("%s.%s", i, strings.ReplaceAll(name, fmt.Sprintf("%s.", imt), ""))
+			}
+		}
+	}
+	return name
+}
+
 // core
 func (g *genAnnotation) GenerateType(c *generator.Context, t *types.Type, w io.Writer) error {
 	// writer
-	sw := generator.NewSnippetWriter(w, c, "$", "$")
+	//sw := generator.NewSnippetWriter(w, c, "$", "$")
+	sw := generator.NewSnippetWriter(w, c, "%%", "%%")
 
 	klog.V(5).Infof("processing type %v", t)
 	// params
 	annotations := extractAnnotations(g.annotationPrefix, t)
+
 	for _, anno := range annotations {
 		annotationType := findAnnotationType(c, anno.rawTypeName)
 		if annotationType == nil {
@@ -295,13 +322,16 @@ func (g *genAnnotation) GenerateType(c *generator.Context, t *types.Type, w io.W
 
 		klog.V(1).Infoln("getNewFunction", g.getNewFunction(c, t))
 
+		serviceMethodMap := g.getServiceMethodMap(t)
 		m := map[string]interface{}{
 			"Resource":             c.Universe.Function(types.Name{Package: t.Name.Package, Name: "Resource"}),
 			"type":                 t,
 			"annotationType":       annotationType,
 			"annotationBody":       anno.body,
 			"newFunction":          g.getNewFunction(c, t),
+			"getOriginServiceName": g.getOriginServiceName(t),
 			"newFunctionSingleton": newFunctionIsSingleton,
+			"ServiceMethodMap":     serviceMethodMap,
 		}
 		klog.V(3).Infoln("annotation m", m)
 		// render registerTemplate
@@ -318,16 +348,125 @@ func (g *genAnnotation) GenerateType(c *generator.Context, t *types.Type, w io.W
 	return sw.Error()
 }
 
+type methodInfo struct {
+	Name           string   `json:"Name"`
+	EnableValidate bool     `json:"EnableValidate"`
+	Parameters     []string `json:"Parameters"`
+	ParameterTypes []string `json:"ParameterTypes"`
+	ParameterExpr  string   `json:"ParameterExpress"`
+	ResultTypes    []string `json:"ResultTypes"`
+	Results        string   `json:"Results"`
+	ResultVarExpr  string   `json:"ResultVarExpr"`
+	ResultExpr     string   `json:"ResultExpr"`
+}
+
+func (g *genAnnotation) getServiceMethodMap(t *types.Type) map[string]*methodInfo {
+	serviceMethodMap := make(map[string]*methodInfo, 5)
+	for name, tm := range t.Methods {
+		m := &methodInfo{Name: name}
+		var parameters []string
+		var parameterTypes []string
+		var parameterExpress []string
+
+		// params
+		annotations := extractAnnotations(g.annotationPrefix, tm)
+		for _, anno := range annotations {
+			if anno.rawTypeName != "Validate" {
+				continue
+			}
+
+			validateEnable := new(ValidateEnable)
+			err := json.Unmarshal([]byte(anno.body), validateEnable)
+			if err != nil {
+				klog.V(4).Infof("json unmarshal validate err: %v", err)
+				continue
+			}
+
+			if validateEnable.Enable {
+				m.EnableValidate = true
+			}
+		}
+
+		parameters = append(parameters, "ctx")
+		parameterTypes = append(parameters, "context.Context")
+		parameterExpress = append(parameterExpress, "ctx context.Context")
+		for idx, p := range tm.Signature.Parameters {
+			t := fmt.Sprintf("%s", g.trimImport(p.Name.String()))
+			if strings.HasPrefix(t, "context.Context") {
+				continue
+			}
+			v := fmt.Sprintf("arg%d", idx)
+			parameterExpress = append(parameters, fmt.Sprintf("%s %s", v, t))
+			parameters = append(parameters, v)
+			parameterTypes = append(parameterTypes, t)
+		}
+
+		m.ParameterTypes = parameterTypes
+		m.Parameters = parameters
+
+		if len(parameters) > 0 {
+			m.ParameterExpr = fmt.Sprintf("(%s)", strings.Join(parameterExpress, ","))
+		} else {
+			m.ParameterExpr = "()"
+		}
+
+		var resultTypes []string
+		var results []string
+		var resultVarExpress []string
+		var resultExpress []string
+		for idx, r := range tm.Signature.Results {
+			t := g.trimImport(r.Name.String())
+			v := fmt.Sprintf("ret%d", idx)
+			resultTypes = append(resultTypes, t)
+			results = append(results, v)
+			resultExpress = append(resultExpress, fmt.Sprintf("%s", v))
+			resultVarExpress = append(resultVarExpress, fmt.Sprintf("%s %s", v, t))
+		}
+
+		m.ResultTypes = resultTypes
+
+		if len(resultTypes) == 1 {
+			m.Results = fmt.Sprintf("%s", resultTypes[0])
+		} else if len(resultTypes) > 1 {
+			m.Results = fmt.Sprintf("(%s)", strings.Join(resultTypes, ","))
+		}
+
+		if m.EnableValidate {
+			if !middleware.StrInSlice("err error", resultVarExpress) {
+				resultVarExpress = append(resultVarExpress, "err error")
+			}
+		}
+
+		if len(resultVarExpress) == 1 {
+			m.ResultVarExpr = fmt.Sprintf("var %s", resultVarExpress[0])
+		} else if len(resultVarExpress) > 1 {
+			m.ResultVarExpr = fmt.Sprintf("var (\n%s\n)", strings.Join(resultVarExpress, "\n"))
+		} else {
+			m.ResultVarExpr = ""
+		}
+
+		m.ResultExpr = fmt.Sprintf("%s", strings.Join(resultExpress, ","))
+		serviceMethodMap[name] = m
+	}
+
+	klog.V(3).Infof("ServiceMethodMap: %+v", serviceMethodMap)
+	return serviceMethodMap
+}
+
+type ValidateEnable struct {
+	Enable bool `json:"enable"`
+}
+
 // register template
 var registerTemplate = `
 func init() {
-	b := new($.annotationType|raw$)
-	err := json.Unmarshal([]byte("$.annotationBody|js$"), b)
+	b := new(%%.annotationType|raw%%)
+	err := json.Unmarshal([]byte("%%.annotationBody|js%%"), b)
 	if err != nil {
 		klog.Fatal("unmarshal json failed", err)
 		return
 	}
-	lib.RegisterAnnotation(new($.type|raw$), b)
+	lib.RegisterAnnotation(new(%%.type|raw%%), b)
 }
 
 `

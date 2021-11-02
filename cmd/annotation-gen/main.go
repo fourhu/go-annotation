@@ -12,6 +12,7 @@ import (
 
 func main() {
 	klog.InitFlags(nil)
+	defer klog.Flush()
 	genericArgs, customArgs := args.NewDefaults()
 
 	// Override defaults.

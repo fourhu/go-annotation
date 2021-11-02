@@ -1,10 +1,16 @@
 package examples
 
-//go:generate annotation-gen -i . -v 8
-
 import (
+	"context"
+	"github.com/mj37yhyy/gowb/pkg/model"
+	"github.com/mj37yhyy/gowb/pkg/web"
 	"github.com/u2takey/go-annotation/pkg/plugin"
+	"net/http"
 )
+
+var _ = plugin.Description{}
+
+//go:generate annotation-gen -i . -v 8
 
 var _ = plugin.Description{}
 
@@ -51,4 +57,48 @@ type ComponentD struct {
 
 func NewComponentD() (*ComponentD, error) {
 	return &ComponentD{IntValue: 2}, nil
+}
+
+// Annotation@Service
+// Annotation@Component
+type ApplicationHandler struct {
+}
+
+func ValidateCreateService(ctx context.Context) (model.Response, web.HttpStatus, error) {
+	return model.Response{}, http.StatusOK, nil
+}
+
+// Annotation@BeforeCallOrder=["Logger"]
+// Annotation@AfterCallOrder=["Logger"]
+// Annotation@Validate={"enable": true}
+func (handler *ApplicationHandler) CreateService(ctx context.Context) (model.Response, web.HttpStatus) {
+	return model.Response{}, http.StatusOK
+}
+
+func (handler *ApplicationHandler) ModifyService(ctx context.Context) (model.Response, web.HttpStatus) {
+	return model.Response{}, http.StatusOK
+}
+
+func (handler *ApplicationHandler) DeleteService(ctx context.Context) (model.Response, web.HttpStatus) {
+	return model.Response{}, http.StatusOK
+}
+
+func (handler *ApplicationHandler) DescribeServices(ctx context.Context) (model.Response, web.HttpStatus) {
+	return model.Response{}, http.StatusOK
+}
+
+func (handler *ApplicationHandler) CreateServiceVersion(ctx context.Context) (model.Response, web.HttpStatus) {
+	return model.Response{}, http.StatusOK
+}
+
+func (handler *ApplicationHandler) DescribeServiceVersions(ctx context.Context) (model.Response, web.HttpStatus) {
+	return model.Response{}, http.StatusOK
+}
+
+func (handler *ApplicationHandler) ModifyServiceVersionReplicas(ctx context.Context) (model.Response, web.HttpStatus) {
+	return model.Response{}, http.StatusOK
+}
+
+func (handler *ApplicationHandler) DeleteServiceVersion(ctx context.Context) (model.Response, web.HttpStatus) {
+	return model.Response{}, http.StatusOK
 }

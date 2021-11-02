@@ -21,21 +21,21 @@ func (p *Component) Template() string {
 	// register a New Method
 	return `
 
-var New$.type|raw$Function = &lib.NewFunction{
-	F: $.newFunction$,
-	Singleton: $.newFunctionSingleton|print$,
+var New%%.type|raw%%Function = &lib.NewFunction{
+	F: %%.newFunction%%,
+	Singleton: %%.newFunctionSingleton|print%%,
 }
 
 func init() {
-	lib.RegisterType(new($.type|raw$), New$.type|raw$Function) 
+	lib.RegisterType(new(%%.type|raw%%), New%%.type|raw%%Function) 
 }
 
-func Provide$.type|raw$ () (*$.type|raw$, error) {
-	r, err := lib.Provide(new($.type|raw$))
+func Provide%%.type|raw%% () (*%%.type|raw%%, error) {
+	r, err := lib.Provide(new(%%.type|raw%%))
 	if err != nil{
 		return nil, err
 	}
-	return r.(*$.type|raw$), nil
+	return r.(*%%.type|raw%%), nil
 }
 `
 }
