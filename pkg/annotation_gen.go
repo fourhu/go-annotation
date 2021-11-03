@@ -181,6 +181,7 @@ func NewGenAnnotation(sanitizedName, annotationPrefix string, pkg *types.Package
 		annotationPrefix: annotationPrefix,
 		imports:          generator.NewImportTracker(),
 		importsCache: []string{
+			"context",
 			"github.com/fourhu/go-annotation/pkg/lib",
 			"k8s.io/klog",
 			"github.com/mj37yhyy/gowb/pkg/web",
@@ -352,8 +353,9 @@ func (g *genAnnotation) GenerateType(c *generator.Context, t *types.Type, w io.W
 }
 
 type methodInfo struct {
-	Name           string   `json:"Name"`
-	EnableValidate bool     `json:"EnableValidate"`
+	Name           string `json:"Name"`
+	EnableValidate bool   `json:"EnableValidate"`
+
 	Parameters     []string `json:"Parameters"`
 	ParameterTypes []string `json:"ParameterTypes"`
 	ParameterExpr  string   `json:"ParameterExpress"`
@@ -373,6 +375,9 @@ func (g *genAnnotation) getServiceMethodMap(t *types.Type) map[string]*methodInf
 
 		// params
 		annotations := extractAnnotations(g.annotationPrefix, tm)
+		if len(annotations) == 0 {
+			continue
+		}
 		for _, anno := range annotations {
 			if anno.rawTypeName != "Validate" {
 				continue

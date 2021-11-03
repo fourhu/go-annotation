@@ -34,7 +34,7 @@ func (handler *%%$handlerType%%Service) %%$name%% %%$info.ParameterExpr%% %%$inf
 	%%else%%
 	%%end%%
 
-	%%$info.ResultExpr%% = handler.ApplicationHandler.CreateService(ctx)
+	%%$info.ResultExpr%% = handler.%%$handlerType%%.%%$name%%(ctx)
 	middleware.After(ctx, handler.Order, %%$info.ResultExpr%%)
 	return %%$info.ResultExpr%%
 }
