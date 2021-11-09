@@ -379,7 +379,7 @@ func (g *genAnnotation) getServiceMethodMap(t *types.Type) map[string]*methodInf
 			continue
 		}
 		for _, anno := range annotations {
-			if anno.rawTypeName != "Validate" {
+			if anno.rawTypeName != "Expose" {
 				continue
 			}
 
@@ -462,7 +462,7 @@ func (g *genAnnotation) getServiceMethodMap(t *types.Type) map[string]*methodInf
 }
 
 type ValidateEnable struct {
-	Enable bool `json:"enable"`
+	Enable bool `json:"enableValidate"`
 }
 
 // register template

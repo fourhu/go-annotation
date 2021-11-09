@@ -12,8 +12,6 @@ var _ = plugin.Description{}
 
 //go:generate annotation-gen -i . -v 8
 
-var _ = plugin.Description{}
-
 //// Annotation@Description={"body":"a"}
 //type A struct {
 //	FieldA string
@@ -76,15 +74,17 @@ func ValidateCreateService(ctx context.Context) (model.Response, web.HttpStatus,
 
 // Annotation@BeforeCallOrder=["Logger"]
 // Annotation@AfterCallOrder=["Logger"]
-// Annotation@Validate={"enable": true}
+// Annotation@Expose={"enableValidate": true}
 func (handler *ApplicationHandler) CreateService(ctx context.Context) (model.Response, web.HttpStatus) {
 	return model.Response{}, http.StatusOK
 }
 
+// Annotation@Expose={"enableValidate": false}
 func (handler *ApplicationHandler) ModifyService(ctx context.Context) (model.Response, web.HttpStatus) {
 	return model.Response{}, http.StatusOK
 }
 
+// Annotation@Expose={"enableValidate": false}
 func (handler *ApplicationHandler) DeleteService(ctx context.Context) (model.Response, web.HttpStatus) {
 	return model.Response{}, http.StatusOK
 }

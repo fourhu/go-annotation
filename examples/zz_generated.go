@@ -33,18 +33,6 @@ func (handler *ApplicationHandlerService) CreateService(ctx context.Context) (mo
 	return ret0, ret1
 }
 
-func (handler *ApplicationHandlerService) CreateServiceVersion(ctx context.Context) (model.Response, web.HttpStatus) {
-	var (
-		ret0 model.Response
-		ret1 web.HttpStatus
-	)
-	middleware.Before(ctx, handler.Order)
-
-	ret0, ret1 = handler.ApplicationHandler.CreateService(ctx)
-	middleware.After(ctx, handler.Order, ret0, ret1)
-	return ret0, ret1
-}
-
 func (handler *ApplicationHandlerService) DeleteService(ctx context.Context) (model.Response, web.HttpStatus) {
 	var (
 		ret0 model.Response
@@ -52,43 +40,7 @@ func (handler *ApplicationHandlerService) DeleteService(ctx context.Context) (mo
 	)
 	middleware.Before(ctx, handler.Order)
 
-	ret0, ret1 = handler.ApplicationHandler.CreateService(ctx)
-	middleware.After(ctx, handler.Order, ret0, ret1)
-	return ret0, ret1
-}
-
-func (handler *ApplicationHandlerService) DeleteServiceVersion(ctx context.Context) (model.Response, web.HttpStatus) {
-	var (
-		ret0 model.Response
-		ret1 web.HttpStatus
-	)
-	middleware.Before(ctx, handler.Order)
-
-	ret0, ret1 = handler.ApplicationHandler.CreateService(ctx)
-	middleware.After(ctx, handler.Order, ret0, ret1)
-	return ret0, ret1
-}
-
-func (handler *ApplicationHandlerService) DescribeServiceVersions(ctx context.Context) (model.Response, web.HttpStatus) {
-	var (
-		ret0 model.Response
-		ret1 web.HttpStatus
-	)
-	middleware.Before(ctx, handler.Order)
-
-	ret0, ret1 = handler.ApplicationHandler.CreateService(ctx)
-	middleware.After(ctx, handler.Order, ret0, ret1)
-	return ret0, ret1
-}
-
-func (handler *ApplicationHandlerService) DescribeServices(ctx context.Context) (model.Response, web.HttpStatus) {
-	var (
-		ret0 model.Response
-		ret1 web.HttpStatus
-	)
-	middleware.Before(ctx, handler.Order)
-
-	ret0, ret1 = handler.ApplicationHandler.CreateService(ctx)
+	ret0, ret1 = handler.ApplicationHandler.DeleteService(ctx)
 	middleware.After(ctx, handler.Order, ret0, ret1)
 	return ret0, ret1
 }
@@ -100,19 +52,7 @@ func (handler *ApplicationHandlerService) ModifyService(ctx context.Context) (mo
 	)
 	middleware.Before(ctx, handler.Order)
 
-	ret0, ret1 = handler.ApplicationHandler.CreateService(ctx)
-	middleware.After(ctx, handler.Order, ret0, ret1)
-	return ret0, ret1
-}
-
-func (handler *ApplicationHandlerService) ModifyServiceVersionReplicas(ctx context.Context) (model.Response, web.HttpStatus) {
-	var (
-		ret0 model.Response
-		ret1 web.HttpStatus
-	)
-	middleware.Before(ctx, handler.Order)
-
-	ret0, ret1 = handler.ApplicationHandler.CreateService(ctx)
+	ret0, ret1 = handler.ApplicationHandler.ModifyService(ctx)
 	middleware.After(ctx, handler.Order, ret0, ret1)
 	return ret0, ret1
 }
